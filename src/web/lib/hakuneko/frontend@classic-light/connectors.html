@@ -187,7 +187,8 @@
                 <div class="connectors">
                     <div class="separator">
                         <i class="fas fa-times button clear" title="Reset all filters" on-click="clearFilters"></i>
-                        <label>Connectors</label>
+                        <label>Connectors | </label>
+                        <input type="checkbox" id="favoriteList" on-change="toggleFavorite"/><label>Show only downloaded</label>
                     </div>
                     <div class="scroll">
                         <template is="dom-repeat" items="[[ connectorList ]]" filter="[[ filterConnectors(connectorPattern, selectedTags) ]]">
@@ -248,8 +249,11 @@
                 this.popupVisibility = false;
                 // list of all available connectors
                 this.connectorList = [];
+                // list of downloaded connectors
+                this.favoriteList = [];
                 // load connectors
                 this.set( 'connectorList', Engine.Connectors );
+                this.set('favoriteList', Engine.Storage.getFavoriteConnectors());
                 this.tags = this.getAvailableTags();
                 this.selectedTags = [];
             }
@@ -356,6 +360,19 @@
             toggleTag( event ) {
                 event.model.item.selected = !event.model.item.selected;
                 this.set( 'selectedTags', this.tags.filter( tag => tag.selected ) );
+            }
+
+            /**
+             * 
+             */
+             toggleFavorite(event) {
+                if (this._originalConnectorList === undefined) {
+                    this._originalConnectorList = [...this.connectorList]; // Store original list to prevent Engine.Connector calls
+                }
+
+                this.connectorList = event.target.checked
+                    ? this._originalConnectorList.filter(connector => this.favoriteList.includes(connector.id))
+                    : this._originalConnectorList;
             }
 
             /**

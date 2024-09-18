@@ -33,6 +33,9 @@ export default class Storage {
         this.temp = this.path.join(require('os').tmpdir(), 'hakuneko');
         this._createDirectoryChain(this.temp);
 
+        this._favoriteConnectors = [];
+        this.initializeFavoriteConnectors();
+
         this.pdfTargetHeight = 1600;
         this.fileURISubstitutions = {
             rgx: /['#?;]/g,
@@ -98,6 +101,21 @@ export default class Storage {
      */
     loadMangaList(connectorID) {
         return this.loadConfig('mangas.' + connectorID);
+    }
+
+    async initializeFavoriteConnectors() {
+        try {
+            const entries = await this._readDirectoryEntries(this.path.dirname(this.config));
+            this._favoriteConnectors = entries
+                .filter(file => file.startsWith('hakuneko.mangas.'))
+                .map(file => file.replace('hakuneko.mangas.', ''));
+        } catch (error) {
+            console.error('Error initializing favorite connectors:', error);
+        }
+    }
+    
+    getFavoriteConnectors() {
+        return this._favoriteConnectors;
     }
 
     /**
